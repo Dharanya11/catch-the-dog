@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Catch the Bone</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        }
+
+        .game-wrapper {
+            text-align: center;
+        }
+
+        .container {
+            width: 420px;
+            height: 560px;
+            background: linear-gradient(180deg, #1aff8c, #00b894);
+            border-radius: 20px;
+            border: 4px solid #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+
+
+        .scoreboard {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .lives {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 18px;
+            z-index: 10;
+        }
+
+        /* GAME OBJECTS */
+        .dog {
+            position: absolute;
+            bottom: 10px;
+            font-size: 42px;
+        }
+
+        .dog::before {
+            content: "🐶";
+        }
+
+        .bone {
+            position: absolute;
+            top: 0;
+            font-size: 36px;
+        }
+
+        .bone::before {
+            content: "🦴";
+        }
+
+        /* CONTROLS */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        button.control {
+            padding: 12px 26px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        .left {
+            background: #ff4b2b;
+        }
+
+        .right {
+            background: #1d976c;
+        }
+
+        .game-over {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* TOP UI OUTSIDE CONTAINER */
+        .top-ui {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            font-size: 34px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .level-container {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        /* LEVEL BUTTONS */
+        .level-button {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .level-button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .level-button.active {
+            background-color: white;
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+        }
+
+        .restart-button {
+            margin-top: 20px;
+            padding: 10px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            background: #ff4b2b;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .restart-button:hover {
+            transform: scale(1.05);
+            background: #e04022;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-wrapper">
+
+        <div class="top-ui">
+            <h1 class="game-title">Catch the Bone</h1>
+            <div class="level-container">
+                <button class="level-button" onclick="setLevel('easy', this)">Easy</button>
+                <button class="level-button" onclick="setLevel('medium', this)">Medium</button>
+                <button class="level-button" onclick="setLevel('hard', this)">Hard</button>
+            </div>
+        </div>
+
+        <div class="container" id="container">
+            <div class="scoreboard" id="score">Score: 0</div>
+            <div class="lives" id="lives">❤️❤️❤️</div>
+
+            <div class="dog" id="dog"></div>
+            <div class="bone" id="bone"></div>
+
+            <div class="game-over" id="gameOver">
+                Game Over 😢
+                <button class="restart-button" onclick="restartGame()">Restart</button>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button class="control left" onclick="moveLeft()">Move Left</button>
+            <button class="control right" onclick="moveRight()">Move Right</button>
+        </div>
+
+    </div>
+
+    <script>
+        const container = document.getElementById("container");
+        const dog = document.getElementById("dog");
+        const bone = document.getElementById("bone");
+
+        let dogX = 190;
+        let boneY = 0;
+        let boneX = 0;
+        let speed = 1.5;
+        let score = 0;
+        let lives = 3;
+        let gameOver = false;
+
+        dog.style.left = dogX + "px";
+
+        function setLevel(level, btn) {
+            if (level === "easy") speed = 1.2;
+            if (level === "medium") speed = 2;
+            if (level === "hard") speed = 3;
+
+            // Reset active state for all buttons
+            document.querySelectorAll('.level-button').forEach(b => b.classList.remove('active'));
+            // Add active state to clicked button
+            if (btn) btn.classList.add('active');
+        }
+
+        function randomBoneX() {
+            boneX = Math.random() * (container.clientWidth - 40);
+            bone.style.left = boneX + "px";
+            boneY = 0;
+        }
+
+        randomBoneX();
+
+        function moveBone() {
+            if (gameOver) return;
+
+            boneY += speed;
+            bone.style.top = boneY + "px";
+
+            const dogRect = dog.getBoundingClientRect();
+            const boneRect = bone.getBoundingClientRect();
+
+            if (
+                dogRect.left < boneRect.right &&
+                dogRect.right > boneRect.left &&
+                dogRect.top < boneRect.bottom &&
+                dogRect.bottom > boneRect.top
+            ) {
+                score++;
+                document.getElementById("score").innerText = "Score: " + score;
+                randomBoneX();
+            }
+
+            if (boneY > container.clientHeight - 40) {
+                lives--;
+                document.getElementById("lives").innerText = "❤️".repeat(lives);
+                randomBoneX();
+                if (lives === 0) endGame();
+            }
+
+            requestAnimationFrame(moveBone);
+        }
+
+        function moveLeft() {
+            dogX = Math.max(0, dogX - 25);
+            dog.style.left = dogX + "px";
+        }
+
+        function moveRight() {
+            dogX = Math.min(container.clientWidth - 40, dogX + 25);
+            dog.style.left = dogX + "px";
+        }
+
+        function endGame() {
+            gameOver = true;
+            document.getElementById("gameOver").style.display = "flex";
+            // Reset active state for all buttons when game over
+            document.querySelectorAll('.level-button').forEach(b => b.classList.remove('active'));
+        }
+
+        function restartGame() {
+            score = 0;
+            lives = 3;
+            gameOver = false;
+            document.getElementById("score").innerText = "Score: 0";
+            document.getElementById("lives").innerText = "❤️❤️❤️";
+            document.getElementById("gameOver").style.display = "none";
+            randomBoneX();
+            moveBone();
+        }
+
+        moveBone();
+
+        document.addEventListener("keydown", e => {
+            if (e.key === "ArrowLeft") moveLeft();
+            if (e.key === "ArrowRight") moveRight();
+        });
+    </script>
+
+</body>
+
+</html>

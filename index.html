@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript Counter App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f4f4f4;
+        }
+
+        .counter-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 50px;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .inc {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .dec {
+            background: #f44336;
+            color: white;
+        }
+
+        .reset {
+            background: #2196F3;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="counter-box">
+        <h2>Counter App</h2>
+        <h1 id="count">0</h1>
+
+        <button class="dec" onclick="decrement()">Decrease</button>
+        <button class="reset" onclick="reset()">Reset</button>
+        <button class="inc" onclick="increment()">Increase</button>
+    </div>
+
+    <script>
+        let count = 0;
+
+        function increment() {
+            count++;
+            document.getElementById("count").innerText = count;
+            if (count % 2 == 0) {
+                document.getElementById("count").style.color = "red";
+            } else {
+                document.getElementById("count").style.color = "green";
+            }
+        }
+
+        function decrement() {
+            count--;
+            document.getElementById("count").innerText = count;
+            if (count % 2 == 0) {
+                document.getElementById("count").style.color = "red";
+            } else {
+                document.getElementById("count").style.color = "green";
+            }
+        }
+
+        function reset() {
+            count = 0;
+            document.getElementById("count").innerText = count;
+        }
+    </script>
+
+</body>
+
+</html>
